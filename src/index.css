@@ -1,0 +1,34 @@
+@import url(https://fonts.googleapis.com/css?family=Roboto+Condensed:300,300italic,regular,italic,700,700italic);
+@import url(https://fonts.googleapis.com/css?family=Roboto:100,100italic,300,300italic,regular,italic,500,500italic,700,700italic,900,900italic);
+@import url(https://fonts.googleapis.com/css?family=Play:regular,700);
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.navbar-button:after {
+  display: block;
+  content: "";
+  border-bottom: solid 3px #2563eb;
+  transform: scaleX(0);
+  transition: transform 300ms ease-in-out;
+}
+.navbar-button:hover:after {
+  transform: scaleX(1);
+}
+.navbar-button:fromright:after {
+  transform-origin: 100% 50%;
+}
+.navbar-button:fromleft:after {
+  transform-origin: 0% 50%;
+}
+
+@layer components {
+  .navbar-button {
+    @apply w-auto border-b-white py-4 px-5 font-rbtcondensed text-lg font-semibold text-gray-800;
+  }
+
+  .footer-list {
+    @apply block transform py-1 font-roboto text-[13px] text-gray-800 transition-colors delay-75 duration-200 hover:text-blue-500 md:text-[15px];
+  }
+}
