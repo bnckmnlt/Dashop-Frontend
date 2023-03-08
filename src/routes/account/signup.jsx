@@ -1,40 +1,79 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { Link, useNavigate } from "react-router-dom";
+import newRequest from "../../utils/newrequest";
 
 const Signup = () => {
-  const [firstname, setFirstname] = useState("");
-  const [lastname, setLastname] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  document.title = "Create Account";
+  const navigate = useNavigate();
+  const [user, setUser] = useState({
+    email: "",
+    password: "",
+    fullname: "",
+    isSeller: false,
+  });
   const [displayError, setDisplayError] = useState();
+  const userAvailable = useSelector((state) => state.user.currentUser._id);
 
-  const verifyEmail = (email) => {
+  useEffect(() => {
+    if (!userAvailable) {
+      navigate("/account/signup");
+    } else {
+      navigate("/account");
+    }
+  }, [userAvailable, navigate]);
+
+  const verifyEmail = async (checkEmail) => {
     let re =
       /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
-    if (re.test(email)) {
-      setDisplayError(true);
-    } else {
+    if (re.test(checkEmail)) {
+      setUser((prev) => {
+        return {
+          ...prev,
+          email: checkEmail,
+          fullname: `${user.firstname} ${user.lastname}`,
+        };
+      });
       setDisplayError(false);
+    } else {
+      setDisplayError(true);
     }
   };
 
-  const handleError = (e) => {
+  const addUser = (e) => {
+    setUser((prev) => {
+      return { ...prev, [e.target.name]: e.target.value };
+    });
+  };
+
+  const handleError = async (e) => {
     e.preventDefault();
+
+    if (!displayError) {
+      try {
+        await newRequest.post("auth/signup", {
+          ...user,
+        });
+        navigate("/account/signin");
+      } catch (error) {
+        setDisplayError(error.response.data.message);
+      }
+    }
   };
 
   return (
     <>
       <div className='py-8'>
         <div className='mx-auto w-full max-w-7xl'>
-          <div className='mx-auto max-w-lg p-14'>
+          <div className='mx-auto max-w-lg p-6 md:p-14'>
             <h1 className='mb-12 block font-rbtcondensed text-5xl font-extrabold'>
               Create Account
             </h1>
-            {displayError === false ? (
+            {displayError ? (
               <p className='mb-2 inline-flex w-full items-center rounded-sm border border-red-500 bg-red-50 py-2 px-4 font-rbtcondensed font-semibold text-red-500'>
                 <span className='mr-2 flex h-2 w-2 rounded-full bg-red-500' />
-                Email is invalid
+                {displayError.length > 0 ? displayError : "Email is invalid"}
               </p>
             ) : (
               ""
@@ -47,9 +86,8 @@ const Signup = () => {
               </label>
               <input
                 type='text'
-                onChange={(e) => {
-                  setFirstname(e.target.value);
-                }}
+                name='firstname'
+                onChange={addUser}
                 className='mb-7 w-full rounded-sm border border-gray-200 py-2 px-3 focus:outline-blue-500'
                 required
               />
@@ -60,9 +98,8 @@ const Signup = () => {
               </label>
               <input
                 type='text'
-                onChange={(e) => {
-                  setLastname(e.target.value);
-                }}
+                name='lastname'
+                onChange={addUser}
                 className='mb-7 w-full rounded-sm border border-gray-200 py-2 px-3 focus:outline-blue-500'
                 required
               />
@@ -73,9 +110,8 @@ const Signup = () => {
               </label>
               <input
                 type='email'
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                }}
+                name='email'
+                onChange={(e) => verifyEmail(e.target.value)}
                 className='mb-7 w-full rounded-sm border border-gray-200 py-2 px-3 focus:outline-blue-500'
                 required
               />
@@ -86,14 +122,12 @@ const Signup = () => {
               </label>
               <input
                 type='password'
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                }}
+                name='password'
+                onChange={addUser}
                 className='mb-7 w-full rounded-sm border border-gray-200 py-2 px-3 focus:outline-blue-500'
                 required
               />
               <button
-                onClick={() => verifyEmail(email)}
                 name='submit'
                 id='submit'
                 className='text-bold w-full rounded-md bg-black py-3 px-4 font-rbtcondensed text-lg font-bold text-white'>

@@ -1,12 +1,25 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import newRequest from "../utils/newrequest";
+import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Link, useNavigate } from "react-router-dom";
+import { signinUser } from "../../redux/userReducer";
+import newRequest from "../../utils/newrequest";
 
 const Signin = () => {
+  document.title = "Account";
+  const navigate = useNavigate();
   const [email, setEmail] = useState();
   const [password, setPassword] = useState();
-  const [isEmailValid, setIsEmailValid] = useState();
   const [error, setError] = useState("");
+  const dispatch = useDispatch();
+  const userAvailable = useSelector((state) => state.user.currentUser._id);
+
+  useEffect(() => {
+    if (!userAvailable) {
+      navigate("/account/signin");
+    } else {
+      navigate("/account");
+    }
+  }, [userAvailable, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -15,20 +28,18 @@ const Signin = () => {
       /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
     if (re.test(email)) {
-      setIsEmailValid(true);
+      try {
+        const res = await newRequest.post("auth/signin", { email, password });
+        localStorage.setItem("currentUser", JSON.stringify(res.data));
+        setError();
+        dispatch(signinUser(res.data.data));
+        navigate("/account");
+      } catch (error) {
+        setError(error.response.data.message);
+      }
     } else {
-      setIsEmailValid(false);
-    }
-
-    if (!isEmailValid) {
-      return setError("Email is invalid");
-    }
-    try {
-      const res = await newRequest.post("auth/signin", { email, password });
-      localStorage.setItem("currentUser", JSON.stringify(res.data));
-      setError();
-    } catch (error) {
-      setError(error.response.data.message);
+      setError(false);
+      setError("Email is invalid");
     }
   };
 
@@ -36,7 +47,7 @@ const Signin = () => {
     <>
       <div className='py-8'>
         <div className='mx-auto w-full max-w-7xl'>
-          <div className='mx-auto max-w-lg p-14'>
+          <div className='mx-auto max-w-lg p-6 md:p-14'>
             <h1 className='mb-12 block font-rbtcondensed text-5xl font-extrabold'>
               Login
             </h1>
@@ -68,7 +79,8 @@ const Signin = () => {
                 </label>
                 <Link
                   to=''
-                  className='font-rbtcondensed font-semibold text-blue-600'>
+                  className='font-rbtcondensed font-semibold text-blue-600'
+                  tabIndex={-1}>
                   Forgot Password?
                 </Link>
               </div>

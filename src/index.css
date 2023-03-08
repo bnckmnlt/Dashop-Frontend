@@ -25,7 +25,7 @@
 
 @layer components {
   .navbar-button {
-    @apply w-auto border-b-white py-4 px-5 font-rbtcondensed text-lg font-semibold text-gray-800;
+    @apply w-full py-4 px-5 font-rbtcondensed text-lg font-semibold text-gray-800 focus:text-blue-500 md:w-auto md:border-0;
   }
 
   .footer-list {

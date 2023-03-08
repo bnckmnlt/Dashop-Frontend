@@ -8,8 +8,12 @@ import ErrorPage from "./error-page";
 import Home from "./routes/home/homepage";
 import Products from "./routes/products/products";
 import ProductId from "./routes/products/product-id";
-import Signin from "./routes/signin";
-import Signup from "./routes/signup";
+import Account from "./routes/account/account";
+import Signin from "./routes/account/signin";
+import Signup from "./routes/account/signup";
+import Addresses from "./routes/account/address";
+import { Provider } from "react-redux";
+import { store } from "./redux/store";
 
 const router = new createBrowserRouter([
   {
@@ -24,13 +28,19 @@ const router = new createBrowserRouter([
       },
       {
         path: "products",
-        element: <Products />,
         errorElement: <ErrorPage />,
-      },
-      {
-        path: "products/:productId",
-        element: <ProductId />,
-        errorElement: <ErrorPage />,
+        children: [
+          {
+            path: "",
+            element: <Products />,
+            errorElement: <ErrorPage />,
+          },
+          {
+            path: ":productId",
+            element: <ProductId />,
+            errorElement: <ErrorPage />,
+          },
+        ],
       },
       {
         path: "services",
@@ -38,14 +48,30 @@ const router = new createBrowserRouter([
         errorElement: <ErrorPage />,
       },
       {
-        path: "account/signin",
-        element: <Signin />,
+        path: "account",
         errorElement: <ErrorPage />,
-      },
-      {
-        path: "account/signup",
-        element: <Signup />,
-        errorElement: <ErrorPage />,
+        children: [
+          {
+            path: "",
+            element: <Account />,
+            errorElement: <ErrorPage />,
+          },
+          {
+            path: "signup",
+            element: <Signup />,
+            errorElement: <ErrorPage />,
+          },
+          {
+            path: "signin",
+            element: <Signin />,
+            errorElement: <ErrorPage />,
+          },
+          {
+            path: "addresses",
+            element: <Addresses />,
+            errorElement: <ErrorPage />,
+          },
+        ],
       },
     ],
   },
@@ -53,6 +79,8 @@ const router = new createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <Provider store={store}>
+      <RouterProvider router={router} />
+    </Provider>
   </React.StrictMode>
 );

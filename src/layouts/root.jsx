@@ -9,7 +9,9 @@ const Homepage = () => {
     <>
       <div className='antialiased'>
         <Navbar />
-        <Outlet />
+        <div className='pt-[100px] md:pt-[110px]'>
+          <Outlet />
+        </div>
         <Footer />
       </div>
     </>
