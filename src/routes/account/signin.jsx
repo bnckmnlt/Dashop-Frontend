@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { signinUser } from "../../redux/userReducer";
+import { getCartItems } from "../../redux/cartReducer";
 import newRequest from "../../utils/newrequest";
 
 const Signin = () => {
@@ -11,35 +12,37 @@ const Signin = () => {
   const [password, setPassword] = useState();
   const [error, setError] = useState("");
   const dispatch = useDispatch();
-  const userAvailable = useSelector((state) => state.user.currentUser._id);
+  const currentUser = localStorage.getItem("currentUser");
 
   useEffect(() => {
-    if (!userAvailable) {
+    if (!currentUser) {
       navigate("/account/signin");
     } else {
       navigate("/account");
     }
-  }, [userAvailable, navigate]);
+  }, [currentUser, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    let re =
+    const re =
       /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
-    if (re.test(email)) {
-      try {
-        const res = await newRequest.post("auth/signin", { email, password });
-        localStorage.setItem("currentUser", JSON.stringify(res.data));
-        setError();
-        dispatch(signinUser(res.data.data));
-        navigate("/account");
-      } catch (error) {
-        setError(error.response.data.message);
-      }
-    } else {
-      setError(false);
+    if (!re.test(email)) {
       setError("Email is invalid");
+      return;
+    }
+
+    try {
+      const res = await newRequest.post("auth/signin", { email, password });
+      const getCart = await newRequest.post("cart", { email });
+      localStorage.setItem("currentUser", JSON.stringify(res.data.data));
+      localStorage.setItem("cartItems", JSON.stringify(getCart.data.cartItems));
+      dispatch(signinUser(localStorage.getItem("currentUser")));
+      dispatch(getCartItems(getCart.data.cartItems));
+      navigate("/account");
+    } catch (error) {
+      setError(error.response);
     }
   };
 

@@ -15,13 +15,15 @@ const Signup = () => {
   const [displayError, setDisplayError] = useState();
   const userAvailable = useSelector((state) => state.user.currentUser._id);
 
+  const currentUser = localStorage.getItem("currentUser");
+
   useEffect(() => {
-    if (!userAvailable) {
+    if (!currentUser) {
       navigate("/account/signup");
     } else {
       navigate("/account");
     }
-  }, [userAvailable, navigate]);
+  }, [currentUser, navigate]);
 
   const verifyEmail = async (checkEmail) => {
     let re =

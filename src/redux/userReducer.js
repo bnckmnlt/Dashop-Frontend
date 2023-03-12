@@ -10,7 +10,6 @@ const userReducer = createSlice({
   reducers: {
     signinUser: (state, action) => {
       state.currentUser = action.payload;
-      console.log(state.currentUser);
     },
     signoutUser: (state, action) => {
       state.currentUser = {};

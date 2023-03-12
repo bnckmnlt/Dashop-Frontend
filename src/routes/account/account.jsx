@@ -3,6 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import newRequest from "../../utils/newrequest";
 import { useDispatch, useSelector } from "react-redux";
 import { signoutUser } from "../../redux/userReducer";
+import { clearCart } from "../../redux/cartReducer";
+import { current } from "@reduxjs/toolkit";
 
 const Account = () => {
   document.title = "Account";
@@ -10,18 +12,23 @@ const Account = () => {
   const dispatch = useDispatch();
   const userAvailable = useSelector((state) => state.user.currentUser._id);
 
+  const currentUser = localStorage.getItem("currentUser");
+
   useEffect(() => {
-    if (!userAvailable) {
+    if (!currentUser) {
       navigate("/account/signin");
     } else {
       navigate("/account");
     }
-  }, [userAvailable, navigate]);
+  }, [current, navigate]);
 
   const logoutUser = async () => {
     try {
       await newRequest.post("auth/logout");
-      await dispatch(signoutUser());
+      dispatch(signoutUser());
+      dispatch(clearCart());
+      localStorage.removeItem("currentUser");
+      localStorage.removeItem("cartItems");
       navigate("/");
     } catch (error) {
       console.log(error.response.data);

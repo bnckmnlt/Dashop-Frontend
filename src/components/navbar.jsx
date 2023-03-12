@@ -16,7 +16,7 @@ const Navbar = () => {
   const [showCart, setShowCart] = useState(false);
   const dispatch = useDispatch();
 
-  const products = useSelector((state) => state.cart.products);
+  const products = useSelector((state) => state.cart.cartItems);
 
   const totalPrice = () => {
     let total = 0;
@@ -74,7 +74,7 @@ const Navbar = () => {
                     <MagnifyingGlassIcon className='h-8 w-8  text-gray-800' />
                   </button>
                   <Link
-                    to='/account/signin'
+                    to='/account'
                     className='hidden py-4 px-2 md:inline-block md:py-4 md:px-3'>
                     <UserIcon className='h-8 w-8 text-gray-800' />
                   </Link>
@@ -83,7 +83,9 @@ const Navbar = () => {
                     onClick={() => setShowCart(!showCart)}>
                     <ShoppingBagIcon className='h-8 w-8  text-gray-800' />
                     <div className='absolute top-2 right-1 h-6 w-6 rounded-full bg-blue-500 text-center font-rbtcondensed text-sm font-semibold text-white'>
-                      {products && products.length}
+                      {products && products.length !== 0
+                        ? `${products.length}`
+                        : 0}
                     </div>
                   </button>
                   <button
@@ -102,7 +104,7 @@ const Navbar = () => {
                   <h3 className='py-4 font-rbtcondensed text-xl font-bold uppercase text-gray-800'>
                     My Bag
                   </h3>
-                  {products.length !== 0 && (
+                  {products && products.length !== 0 && (
                     <button
                       className='rounded-full bg-red-500 py-1 px-4 font-rbtcondensed text-sm font-semibold text-white hover:bg-red-600'
                       onClick={() => dispatch(clearCart())}>
@@ -111,31 +113,37 @@ const Navbar = () => {
                   )}
                 </div>
                 {products && products.length > 0 ? (
-                  products.map(({ id, name, price, img, desc, quantity }) => (
-                    <div className='mt-5 flex flex-auto' key={id}>
-                      <img
-                        src={img}
-                        alt=''
-                        className='h-28 w-24 bg-gray-200 object-cover'
-                      />
-                      <div className='flex flex-col px-4'>
-                        <span className='font-rbtcondensed text-2xl font-bold'>
-                          {name}
-                        </span>
-                        <p className='font-roboto text-xs text-gray-700'>
-                          {desc}
-                        </p>
-                        <p className='font-rbtcondensed text-lg font-bold'>
-                          {quantity} x $ {price}
-                        </p>
+                  products.map(
+                    (
+                      { productId, name, price, img, desc, quantity },
+                      index
+                    ) => (
+                      <div className='mt-5 flex flex-auto' key={index}>
+                        <img
+                          src={img}
+                          alt=''
+                          className='h-28 w-24 bg-gray-200 object-cover'
+                        />
+                        <div className='flex flex-col px-4'>
+                          <span className='font-rbtcondensed text-2xl font-bold'>
+                            {name}
+                          </span>
+                          <p className='font-roboto text-xs text-gray-700'>
+                            {desc}
+                          </p>
+                          <p className='font-rbtcondensed text-lg font-bold'>
+                            {quantity} x $ {price}
+                          </p>
+                        </div>
+                        <div>
+                          <button
+                            onClick={() => dispatch(removeItem(productsId))}>
+                            <TrashIcon className='mt-5 h-8 w-8 text-red-600' />
+                          </button>
+                        </div>
                       </div>
-                      <div>
-                        <button onClick={() => dispatch(removeItem(id))}>
-                          <TrashIcon className='mt-5 h-8 w-8 text-red-600' />
-                        </button>
-                      </div>
-                    </div>
-                  ))
+                    )
+                  )
                 ) : (
                   <p className='mt-4 px-2 font-rbtcondensed text-lg font-medium'>
                     Your cart is currently empty.
@@ -148,7 +156,7 @@ const Navbar = () => {
                     Subtotal
                   </span>
                   <span className='font-rbtcondensed text-lg font-bold text-gray-800'>
-                    $ {totalPrice()}
+                    $ {products ? totalPrice() : 0}
                   </span>
                 </div>
                 <div className='mt-4 flex justify-end gap-3'>
