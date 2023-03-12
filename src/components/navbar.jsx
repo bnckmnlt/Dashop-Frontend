@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   UserIcon,
@@ -9,23 +9,47 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { useDispatch, useSelector } from "react-redux";
-import { clearCart, removeItem } from "../redux/cartReducer";
+import {
+  clearCart,
+  getCartItemsAsync,
+  removeItem as deleteItem,
+} from "../redux/cartReducer";
+import newRequest from "../utils/newrequest";
 
 const Navbar = () => {
   const [isEnabled, setIsEnabled] = useState(false);
   const [showCart, setShowCart] = useState(false);
   const dispatch = useDispatch();
-
-  const products = useSelector((state) => state.cart.cartItems);
+  const currentUser = JSON.parse(localStorage.getItem("currentUser"));
 
   const totalPrice = () => {
     let total = 0;
-    products.forEach((item) => {
+    cartItems.forEach((item) => {
       total += item.quantity * item.price;
     });
 
     return total.toFixed(2);
   };
+
+  const removeItem = async (productId) => {
+    try {
+      const remove = await newRequest.put("cart/delete", {
+        userId: currentUser._id,
+        productId: productId,
+      });
+      dispatch(deleteItem(productId));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const cartItems = useSelector((state) => state.cart.cartItems);
+  const status = useSelector((state) => state.cart.status);
+  const error = useSelector((state) => state.cart.error);
+
+  useEffect(() => {
+    dispatch(getCartItemsAsync());
+  }, [dispatch]);
 
   return (
     <>
@@ -83,8 +107,8 @@ const Navbar = () => {
                     onClick={() => setShowCart(!showCart)}>
                     <ShoppingBagIcon className='h-8 w-8  text-gray-800' />
                     <div className='absolute top-2 right-1 h-6 w-6 rounded-full bg-blue-500 text-center font-rbtcondensed text-sm font-semibold text-white'>
-                      {products && products.length !== 0
-                        ? `${products.length}`
+                      {cartItems && cartItems.length !== 0
+                        ? `${cartItems.length}`
                         : 0}
                     </div>
                   </button>
@@ -104,7 +128,7 @@ const Navbar = () => {
                   <h3 className='py-4 font-rbtcondensed text-xl font-bold uppercase text-gray-800'>
                     My Bag
                   </h3>
-                  {products && products.length !== 0 && (
+                  {cartItems && cartItems.length !== 0 && (
                     <button
                       className='rounded-full bg-red-500 py-1 px-4 font-rbtcondensed text-sm font-semibold text-white hover:bg-red-600'
                       onClick={() => dispatch(clearCart())}>
@@ -112,8 +136,8 @@ const Navbar = () => {
                     </button>
                   )}
                 </div>
-                {products && products.length > 0 ? (
-                  products.map(
+                {cartItems && cartItems.length > 0 ? (
+                  cartItems.map(
                     (
                       { productId, name, price, img, desc, quantity },
                       index
@@ -136,8 +160,7 @@ const Navbar = () => {
                           </p>
                         </div>
                         <div>
-                          <button
-                            onClick={() => dispatch(removeItem(productsId))}>
+                          <button onClick={() => removeItem(productId)}>
                             <TrashIcon className='mt-5 h-8 w-8 text-red-600' />
                           </button>
                         </div>
@@ -156,7 +179,7 @@ const Navbar = () => {
                     Subtotal
                   </span>
                   <span className='font-rbtcondensed text-lg font-bold text-gray-800'>
-                    $ {products ? totalPrice() : 0}
+                    $ {cartItems ? totalPrice() : 0}
                   </span>
                 </div>
                 <div className='mt-4 flex justify-end gap-3'>

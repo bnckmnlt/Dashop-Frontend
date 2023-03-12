@@ -21,7 +21,7 @@ const Addresses = () => {
   const addProduct = async () => {
     const currentUser = JSON.parse(localStorage.getItem("currentUser"));
     try {
-      const addItems = await newRequest.post("cart/add", {
+      const firstItem = {
         userId: currentUser._id,
         productId: 1,
         name: "Blue Lock",
@@ -29,7 +29,11 @@ const Addresses = () => {
         img: "https://image.uniqlo.com/UQ/ST3/AsianCommon/imagesgoods/427917/item/goods_25_427917.jpg?width=750",
         price: 100.0,
         quantity: 1,
-      });
+      };
+      dispatch(addToCart(firstItem));
+
+      const addItems = await newRequest.post("cart/add", firstItem);
+
       return Promise.resolve(navigate("/account"));
     } catch (error) {
       console.log(error);

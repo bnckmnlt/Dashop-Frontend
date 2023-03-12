@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { signinUser } from "../../redux/userReducer";
-import { getCartItems } from "../../redux/cartReducer";
+import { getCartItemsAsync } from "../../redux/cartReducer";
 import newRequest from "../../utils/newrequest";
 
 const Signin = () => {
@@ -35,11 +35,11 @@ const Signin = () => {
 
     try {
       const res = await newRequest.post("auth/signin", { email, password });
-      const getCart = await newRequest.post("cart", { email });
+      const getCart = await newRequest.post("cart", { _id: res.data.data._id });
       localStorage.setItem("currentUser", JSON.stringify(res.data.data));
       localStorage.setItem("cartItems", JSON.stringify(getCart.data.cartItems));
-      dispatch(signinUser(localStorage.getItem("currentUser")));
-      dispatch(getCartItems(getCart.data.cartItems));
+      dispatch(signinUser(res.data.data));
+      dispatch(getCartItemsAsync(getCart.data.cartItems));
       navigate("/account");
     } catch (error) {
       setError(error.response);

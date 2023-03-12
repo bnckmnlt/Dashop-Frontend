@@ -1,7 +1,19 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import newRequest from "../utils/newrequest";
+
+export const getCartItemsAsync = createAsyncThunk(
+  "cart/getCartItemsAsync",
+  async (_, { getState }) => {
+    const { currentUser } = getState().user;
+    const response = await newRequest.post("cart", { _id: currentUser._id });
+    return response.data.cartItems;
+  }
+);
 
 const initialState = {
-  cartItems: JSON.parse(localStorage.getItem("cartItems")) || [],
+  cartItems: [],
+  status: "idle",
+  error: null,
 };
 
 export const cartSlice = createSlice({
@@ -12,30 +24,41 @@ export const cartSlice = createSlice({
       return { ...state, cartItems: action.payload };
     },
     addToCart: (state, action) => {
-      const item = state.cartItems.find(
+      const itemIndex = state.cartItems.findIndex(
         (item) => item.productId === action.payload.productId
       );
 
-      if (item) {
-        item.quantity += action.payload.quantity;
+      if (itemIndex !== -1) {
+        state.cartItems[itemIndex].quantity += action.payload.quantity;
       } else {
         state.cartItems.push(action.payload);
       }
-      localStorage.setItem("cartItems", JSON.stringify(state.cartItems));
     },
     removeItem: (state, action) => {
       state.cartItems = state.cartItems.filter(
         (item) => item.productId !== action.payload
       );
-      localStorage.setItem("cartItems", JSON.stringify(state.cartItems));
     },
     clearCart: (state) => {
       state.cartItems = [];
-      localStorage.setItem("cartItems", JSON.stringify(state.cartItems));
+      e;
     },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(getCartItemsAsync.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(getCartItemsAsync.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.cartItems = action.payload;
+      })
+      .addCase(getCartItemsAsync.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.error.message;
+      });
   },
 });
 
-export const { getCartItems, addToCart, removeItem, clearCart } =
-  cartSlice.actions;
+export const { addToCart, removeItem, clearCart } = cartSlice.actions;
 export default cartSlice.reducer;
